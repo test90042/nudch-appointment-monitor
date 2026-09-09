@@ -2,7 +2,7 @@
 
 This ExecPlan (execution plan) is a living document. The sections `Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Purpose / big picture
 
@@ -31,7 +31,7 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 - Risk: the portal changes wording or markup. Severity: medium. Likelihood: medium. Mitigation: use multiple semantic signals, bounded diagnostics, fixtures, and a three-failure health alert.
 - Risk: GitHub disables schedules after public-repository inactivity. Severity: high. Likelihood: medium. Mitigation: update a tracked monthly heartbeat through the scheduled workflow.
 - Risk: scheduled jobs may start later than their nominal time. Severity: medium. Likelihood: medium. Mitigation: document that five minutes is the requested cadence, not a real-time guarantee.
-- Risk: ntfy has no uptime SLA and GitHub email timing depends on account settings. Severity: high. Likelihood: low. Mitigation: use both channels, make GitHub Issues idempotent, and save state only after both deliveries succeed.
+- Risk: ntfy has no uptime SLA and GitHub email timing depends on account settings. Severity: high. Likelihood: low. Mitigation: require idempotent GitHub Issues, keep ntfy optional, and save state only after configured deliveries succeed.
 
 ## Progress
 
@@ -40,8 +40,8 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 - [x] (2026-09-09 16:34Z) Created tests and captured the expected missing-module failing baseline.
 - [x] (2026-09-09 16:41Z) Implemented detection, state transitions, Playwright probing, CLI orchestration, and the revised ntfy plus GitHub notification adapters.
 - [x] (2026-09-09 17:24Z) Added GitHub Actions scheduling, monthly heartbeat, documentation, and secret handling.
-- [x] (2026-09-09 17:25Z) Passed 17 tests, a zero-vulnerability audit, target and comparison live smoke checks, and heartbeat idempotence.
-- [ ] Initialize local Git metadata and assess whether publication is possible.
+- [x] (2026-09-09 17:25Z) Passed 18 tests, a zero-vulnerability audit, target and comparison live smoke checks, and heartbeat idempotence.
+- [x] (2026-09-09 18:17Z) Published the public repository and completed successful dry and live workflow runs.
 
 ## Surprises & discoveries
 
@@ -62,7 +62,7 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 
 ## Outcomes & retrospective
 
-The local monitor is implemented. Seventeen tests pass, `npm audit` reports zero vulnerabilities, the target live dry run reports `unavailable`, the comparison live dry run reports the expected `available` appointment, and the heartbeat is idempotent. Publication and real notification delivery remain dependent on the user's GitHub login, ntfy topic, and action-time approval for creating a public repository.
+The monitor is implemented and published at `test90042/nudch-appointment-monitor`. Eighteen tests pass, `npm audit` reports zero vulnerabilities, live target and comparison checks classify correctly, and both GitHub workflow runs succeeded. GitHub Issue/email is active without extra secrets; ntfy remains an optional additional channel.
 
 ## Context and orientation
 
