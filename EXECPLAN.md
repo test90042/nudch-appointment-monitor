@@ -14,7 +14,7 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 - Do not automate booking, authentication, or entry of patient data.
 - Keep the unguessable ntfy topic in GitHub Secrets; never log or commit it.
 - Treat loading, 404, and unfamiliar page content as errors rather than availability.
-- Persist an available state only after both GitHub and ntfy delivery succeed.
+- Persist an available state only after GitHub delivery and, when configured, ntfy delivery succeed.
 - Run on Node.js 22 with a standard GitHub-hosted Ubuntu runner.
 
 ## Tolerances (exception triggers)
@@ -58,6 +58,7 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 - Decision: replace Telegram with ntfy push plus an assigned GitHub Issue. Rationale: the user cannot use Telegram; two independent channels reduce the risk of missing a time-sensitive slot. Date/Author: 2026-09-09, Codex.
 - Decision: create or find the idempotent GitHub Issue before sending ntfy. Rationale: if ntfy fails, the retry will not create a duplicate Issue/email. Date/Author: 2026-09-09, Codex.
 - Decision: pin Playwright 1.63.0 instead of the initially planned 1.55.0. Rationale: it is the current version returned by npm and removes the browser-download certificate advisory. Date/Author: 2026-09-09, Codex.
+- Decision: make ntfy optional while GitHub Issue/email remains required. Rationale: the monitor operates immediately without a new secret, and ntfy can be enabled later as an independent push channel. Date/Author: 2026-09-09, Codex.
 
 ## Outcomes & retrospective
 

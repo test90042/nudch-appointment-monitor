@@ -15,14 +15,16 @@ export async function sendNotification({ payload, targetUrl, github, ntfy, fetch
     fetchImpl
   });
 
-  await sendNtfyNotification({
-    ...ntfy,
-    title,
-    text,
-    clickUrl: targetUrl,
-    urgent,
-    fetchImpl
-  });
+  if (ntfy?.topic) {
+    await sendNtfyNotification({
+      ...ntfy,
+      title,
+      text,
+      clickUrl: targetUrl,
+      urgent,
+      fetchImpl
+    });
+  }
 }
 
 function formatNotification(notification, targetUrl) {

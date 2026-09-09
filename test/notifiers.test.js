@@ -84,3 +84,25 @@ test("combined delivery makes GitHub idempotent before sending ntfy", async () =
   assert.match(urls[1], /api\.github\.com/);
   assert.equal(urls[2], "https://ntfy.sh/unguessable-topic");
 });
+
+test("GitHub delivery works when optional ntfy is not configured", async () => {
+  const urls = [];
+  await sendNotification({
+    payload: {
+      notification: {
+        type: "outage", key: "outage:one", checkedAt: "2026-09-09T16:30:00.000Z",
+        errorCount: 3, observation: { reason: "Timeout" }
+      }
+    },
+    targetUrl: "https://example.test",
+    github: { token: "token", repository: "owner/repo", assignee: "owner" },
+    ntfy: { topic: "" },
+    fetchImpl: async (url) => {
+      urls.push(url);
+      return urls.length === 1 ? response({ json: [] }) : response({ status: 201, json: {} });
+    }
+  });
+
+  assert.equal(urls.length, 2);
+  assert.ok(urls.every((url) => url.includes("api.github.com")));
+});

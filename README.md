@@ -7,7 +7,7 @@ Monitor nič nerezervuje, neprihlasuje sa a neposiela portálu žiadne osobné a
 ## Čo potrebujete
 
 - verejný GitHub repozitár,
-- aplikáciu [ntfy](https://ntfy.sh/) v telefóne alebo jej webovú aplikáciu,
+- voliteľne aplikáciu [ntfy](https://ntfy.sh/) v telefóne alebo jej webovú aplikáciu,
 - GitHub e-mailové upozornenia zapnuté pre priradené Issues.
 
 ## Nastavenie ntfy
@@ -26,7 +26,7 @@ V osobných **GitHub Settings → Notifications** povoľte e-mail pre „Partici
 ## Nastavenie GitHub projektu
 
 1. Vytvorte verejný repozitár a nahrajte doň tento projekt.
-2. V **Settings → Secrets and variables → Actions** vytvorte repository secret `NTFY_TOPIC` s náhodným názvom témy.
+2. Ak chcete aj ntfy push, vytvorte repository secret `NTFY_TOPIC` s náhodným názvom témy. Bez secretu funguje GitHub Issue/e-mail samostatne.
 3. Ak repozitár vlastní organizácia, vytvorte repository variable `GITHUB_NOTIFY_USER` s vaším GitHub používateľským menom. Pri osobnom repozitári sa automaticky použije vlastník.
 4. V **Settings → Actions → General → Workflow permissions** povoľte **Read and write permissions**. Workflow zapisuje iba `state.json`, mesačný `heartbeat.txt` a notifikačné Issues.
 5. Otvorte **Actions → Monitor NUDCH appointments → Run workflow**, ponechajte `dry_run` zapnuté a skontrolujte úspešný výsledok.
