@@ -1,0 +1,77 @@
+name: Monitor NUDCH appointments
+
+on:
+  schedule:
+    - cron: "3,9,15,21,27,33,39,45,51,57 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Check the portal without notifications or state changes"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: nudch-appointment-monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      TARGET_URL: "https://portal.nudch.eu/workplaces/reservation?idf=nuo4|2958571&step=2"
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      NTFY_SERVER: ${{ vars.NTFY_SERVER || 'https://ntfy.sh' }}
+      GITHUB_TOKEN: ${{ github.token }}
+      GITHUB_NOTIFY_USER: ${{ vars.GITHUB_NOTIFY_USER || github.repository_owner }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Check portal
+        id: monitor
+        continue-on-error: true
+        run: npm run check
+
+      - name: Update monthly heartbeat
+        if: env.DRY_RUN != 'true'
+        run: npm run heartbeat
+
+      - name: Persist monitor state
+        if: env.DRY_RUN != 'true'
+        run: |
+          if git diff --quiet -- state.json heartbeat.txt; then
+            echo "No monitor state change."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state.json heartbeat.txt
+          git commit -m "chore: update appointment monitor state"
+          git pull --rebase
+          git push
+
+      - name: Fail workflow after persisting error state
+        if: steps.monitor.outcome == 'failure'
+        run: exit 1
