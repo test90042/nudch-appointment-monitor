@@ -34,6 +34,12 @@ V osobných **GitHub Settings → Notifications** povoľte e-mail pre „Partici
 
 Naplánované GitHub workflow sa môžu spustiť s oneskorením. Päť minút je plánovaná frekvencia, nie garancia okamžitého upozornenia.
 
+### Kontrola, že monitor funguje
+
+Na karte **Actions → Monitor NUDCH appointments** je každý pravidelný beh samostatný záznam. Zelený výsledok znamená, že portál vrátil definitívny stav; červený beh znamená chybu kontroly.
+
+Každý deň o 07:15 UTC (približne 08:15 v zime alebo 09:15 v lete na Slovensku) príde cez ntfy súhrn za posledných 24 hodín. Obsahuje presný počet úspešných a neúspešných naplánovaných kontrol a čas poslednej úspešnej kontroly. Ak neprebehla ani jedna úspešná kontrola, správa je urgentná.
+
 ## Lokálne použitie
 
 ```powershell

@@ -9,6 +9,7 @@
   },
   "scripts": {
     "check": "node src/cli.js",
+    "daily-report": "node src/daily-report.js",
     "heartbeat": "node scripts/update-heartbeat.js",
     "test": "node --test"
   },
