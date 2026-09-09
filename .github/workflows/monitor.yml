@@ -2,7 +2,7 @@ name: Monitor NUDCH appointments
 
 on:
   schedule:
-    - cron: "2-57/5 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
     inputs:
       dry_run:
