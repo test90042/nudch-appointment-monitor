@@ -12,16 +12,19 @@ export async function sendNtfyNotification({
   }
 
   const baseUrl = server.replace(/\/+$/, "");
-  const response = await fetchImpl(`${baseUrl}/${encodeURIComponent(topic)}`, {
+  const response = await fetchImpl(`${baseUrl}/`, {
     method: "POST",
     headers: {
-      "content-type": "text/plain; charset=utf-8",
-      "title": title,
-      "priority": urgent ? "urgent" : "default",
-      "tags": urgent ? "rotating_light,calendar" : "white_check_mark",
-      ...(clickUrl ? { "click": clickUrl } : {})
+      "content-type": "application/json; charset=utf-8"
     },
-    body: text,
+    body: JSON.stringify({
+      topic,
+      title,
+      message: text,
+      priority: urgent ? 5 : 3,
+      tags: urgent ? ["rotating_light", "calendar"] : ["white_check_mark"],
+      ...(clickUrl ? { click: clickUrl } : {})
+    }),
     signal: AbortSignal.timeout(15_000)
   });
 

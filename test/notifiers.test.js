@@ -43,10 +43,10 @@ test("GitHub notification creates and assigns a new issue", async () => {
   assert.match(body.body, /nudch-notification:availability:new-slot/);
 });
 
-test("ntfy sends an urgent push with a click-through URL", async () => {
+test("ntfy sends UTF-8 content as JSON with a click-through URL", async () => {
   const calls = [];
   await sendNtfyNotification({
-    topic: "unguessable-topic", title: "New slot", text: "Available",
+    topic: "unguessable-topic", title: "NÚDCH termín", text: "Termín je dostupný",
     clickUrl: "https://example.test", urgent: true,
     fetchImpl: async (url, options) => {
       calls.push({ url, options });
@@ -54,9 +54,16 @@ test("ntfy sends an urgent push with a click-through URL", async () => {
     }
   });
 
-  assert.equal(calls[0].url, "https://ntfy.sh/unguessable-topic");
-  assert.equal(calls[0].options.headers.priority, "urgent");
-  assert.equal(calls[0].options.headers.click, "https://example.test");
+  assert.equal(calls[0].url, "https://ntfy.sh/");
+  assert.equal(calls[0].options.headers["content-type"], "application/json; charset=utf-8");
+  assert.deepEqual(JSON.parse(calls[0].options.body), {
+    topic: "unguessable-topic",
+    title: "NÚDCH termín",
+    message: "Termín je dostupný",
+    priority: 5,
+    tags: ["rotating_light", "calendar"],
+    click: "https://example.test"
+  });
 });
 
 test("combined delivery makes GitHub idempotent before sending ntfy", async () => {
@@ -82,7 +89,7 @@ test("combined delivery makes GitHub idempotent before sending ntfy", async () =
 
   assert.match(urls[0], /api\.github\.com/);
   assert.match(urls[1], /api\.github\.com/);
-  assert.equal(urls[2], "https://ntfy.sh/unguessable-topic");
+  assert.equal(urls[2], "https://ntfy.sh/");
 });
 
 test("GitHub delivery works when optional ntfy is not configured", async () => {
