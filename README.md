@@ -1,6 +1,6 @@
 # Monitor termínov NÚDCH
 
-Projekt každých päť minút skontroluje verejnú stránku Psychiatrickej ambulancie 03 (MUDr. Böhmer). Keď sa objaví text **Najbližší termín**, konkrétny dátum a čas a možnosť **Rezervovať termín**, pošle ntfy push a vytvorí GitHub Issue priradený vášmu účtu. GitHub môže toto priradenie doručiť aj e-mailom.
+Projekt približne každých šesť minút skontroluje verejnú stránku Psychiatrickej ambulancie 03 (MUDr. Böhmer). Keď sa objaví text **Najbližší termín**, konkrétny dátum a čas a možnosť **Rezervovať termín**, pošle ntfy push a vytvorí GitHub Issue priradený vášmu účtu. GitHub môže toto priradenie doručiť aj e-mailom.
 
 Monitor nič nerezervuje, neprihlasuje sa a neposiela portálu žiadne osobné ani zdravotné údaje.
 
@@ -32,7 +32,7 @@ V osobných **GitHub Settings → Notifications** povoľte e-mail pre „Partici
 5. Otvorte **Actions → Monitor NUDCH appointments → Run workflow**, ponechajte `dry_run` zapnuté a skontrolujte úspešný výsledok.
 6. Spustite workflow ešte raz s `dry_run` vypnutým. Ak je termín nedostupný, upozornenie sa neposiela; prvé príde pri novom termíne alebo po troch chybách portálu.
 
-Naplánované GitHub workflow sa môžu spustiť s oneskorením. Päť minút je plánovaná frekvencia, nie garancia okamžitého upozornenia.
+Naplánované GitHub workflow sa môžu spustiť s oneskorením. Šesť minút je plánovaná frekvencia, nie garancia okamžitého upozornenia.
 
 ### Kontrola, že monitor funguje
 
@@ -57,7 +57,7 @@ Pre skutočné lokálne odoslanie nastavte `NTFY_TOPIC`, `GITHUB_TOKEN`, `GITHUB
 ## Správanie upozornení
 
 - Nový alebo zmenený termín sa pošle raz.
-- Rovnaký termín sa každých päť minút neopakuje.
+- Rovnaký termín sa každých šesť minút neopakuje.
 - Po troch po sebe idúcich chybách príde jednorazové servisné upozornenie.
 - Po obnovení portálu príde správa o náprave.
 - GitHub Issue obsahuje stabilný skrytý identifikátor, takže opakovanie nevytvorí duplicitný e-mail.
