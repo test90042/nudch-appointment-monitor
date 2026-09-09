@@ -1,0 +1,18 @@
+{
+  "name": "nudch-appointment-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloud monitor for newly available NUDCH appointment slots",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check": "node src/cli.js",
+    "heartbeat": "node scripts/update-heartbeat.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "playwright": "1.63.0"
+  }
+}
