@@ -13,7 +13,6 @@ export async function collectWorkflowReport({
 
   for (let page = 1; page <= 10; page += 1) {
     const url = new URL(`https://api.github.com/repos/${repository}/actions/workflows/${workflow}/runs`);
-    url.searchParams.set("event", "schedule");
     url.searchParams.set("status", "completed");
     url.searchParams.set("per_page", "100");
     url.searchParams.set("page", String(page));
@@ -30,7 +29,9 @@ export async function collectWorkflowReport({
 
     const body = await response.json();
     const pageRuns = body.workflow_runs ?? [];
-    runs.push(...pageRuns.filter((run) => new Date(run.created_at) >= since));
+    runs.push(...pageRuns.filter((run) =>
+      new Date(run.created_at) >= since && isScheduledMonitorRun(run)
+    ));
 
     if (pageRuns.length < 100 || pageRuns.some((run) => new Date(run.created_at) < since)) break;
   }
@@ -41,6 +42,10 @@ export async function collectWorkflowReport({
     .map((run) => run.run_started_at ?? run.created_at)
     .sort()
     .at(-1) ?? null;
+  const githubScheduled = runs.filter((run) => run.event === "schedule").length;
+  const externalScheduled = runs.filter((run) =>
+    run.event === "workflow_dispatch" && run.display_title === "External scheduled check"
+  ).length;
 
   return {
     since: since.toISOString(),
@@ -48,8 +53,16 @@ export async function collectWorkflowReport({
     total: runs.length,
     successful: successful.length,
     failed: failed.length,
-    lastSuccessfulAt
+    lastSuccessfulAt,
+    githubScheduled,
+    externalScheduled
   };
+}
+
+export function isScheduledMonitorRun(run) {
+  return run.event === "schedule" || (
+    run.event === "workflow_dispatch" && run.display_title === "External scheduled check"
+  );
 }
 
 export function formatDailyReport(report) {
@@ -64,6 +77,8 @@ export function formatDailyReport(report) {
   return [
     `Úspešné kontroly za posledných 24 hodín: ${report.successful}`,
     `Neúspešné kontroly: ${report.failed}`,
+    `Externý plánovač: ${report.externalScheduled ?? 0}`,
+    `GitHub plánovač: ${report.githubScheduled ?? 0}`,
     `Posledná úspešná kontrola: ${lastCheck}`,
     report.successful > 0
       ? "Monitor termínov NÚDCH funguje."

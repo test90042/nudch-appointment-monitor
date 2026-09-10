@@ -2,7 +2,7 @@
 
 This ExecPlan (execution plan) is a living document. The sections `Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
-Status: COMPLETE
+Status: IN PROGRESS — external scheduler workaround
 
 ## Purpose / big picture
 
@@ -42,6 +42,10 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 - [x] (2026-09-09 17:24Z) Added GitHub Actions scheduling, monthly heartbeat, documentation, and secret handling.
 - [x] (2026-09-09 17:25Z) Passed 18 tests, a zero-vulnerability audit, target and comparison live smoke checks, and heartbeat idempotence.
 - [x] (2026-09-09 18:17Z) Published the public repository and completed successful dry and live workflow runs.
+- [x] (2026-09-10 18:00Z) Measured only 6 GitHub-scheduled checks in the preceding 24 hours instead of roughly 240 requested checks.
+- [x] (2026-09-10 18:10Z) Added externally dispatched run identification, report accounting, tests, and cron-job.org setup documentation.
+- [ ] Create the restricted fine-grained GitHub token and two cron-job.org jobs, then verify at least three monitor dispatches and one daily report dispatch.
+- [ ] Remove native GitHub schedules after the external scheduler is proven, rerun validation, and mark this plan complete.
 
 ## Surprises & discoveries
 
@@ -49,6 +53,7 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 - Observation: GitHub CLI is not installed and the directory is not a Git repository. Evidence: `gh --version` was unavailable and `git rev-parse` failed. Impact: local delivery can be completed, but publication needs another authenticated path or user action.
 - Observation: Playwright 1.55.0 is affected by GHSA-7mvr-c777-76hp. Evidence: `npm audit` reported a high-severity direct dependency issue fixed after 1.55.0. Impact: the dependency is upgraded to 1.63.0 before any browser installation.
 - Observation: the initial layout reached the 20-file tolerance only after consolidating three small runtime helpers and one test file. Evidence: the final inventory reports exactly 20 non-generated project files. Impact: behavior remains separated by responsibility without exceeding the approved scope.
+- Observation: the explicit six-minute GitHub schedule produced only 6 scheduled runs in a 24-hour window. Evidence: the public Actions API returned six completed `schedule` runs between 2026-09-09 and 2026-09-10, all successful. Impact: GitHub's native scheduler is unsuitable as the primary trigger for this time-sensitive monitor.
 
 ## Decision log
 
@@ -59,10 +64,12 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 - Decision: create or find the idempotent GitHub Issue before sending ntfy. Rationale: if ntfy fails, the retry will not create a duplicate Issue/email. Date/Author: 2026-09-09, Codex.
 - Decision: pin Playwright 1.63.0 instead of the initially planned 1.55.0. Rationale: it is the current version returned by npm and removes the browser-download certificate advisory. Date/Author: 2026-09-09, Codex.
 - Decision: make ntfy optional while GitHub Issue/email remains required. Rationale: the monitor operates immediately without a new secret, and ntfy can be enabled later as an independent push channel. Date/Author: 2026-09-09, Codex.
+- Decision: use cron-job.org to call GitHub workflow dispatch with a fine-grained token restricted to this repository and Actions write permission. Rationale: the monitor code and secret notification configuration stay in GitHub while scheduling no longer depends on GitHub's best-effort cron. Date/Author: 2026-09-10, Codex.
+- Decision: mark external monitor runs through a boolean dispatch input and stable run name. Rationale: the daily report can count automatic external runs without incorrectly counting manual tests. Date/Author: 2026-09-10, Codex.
 
 ## Outcomes & retrospective
 
-The monitor is implemented and published at `test90042/nudch-appointment-monitor`. Eighteen tests pass, `npm audit` reports zero vulnerabilities, live target and comparison checks classify correctly, and both GitHub workflow runs succeeded. GitHub Issue/email is active without extra secrets; ntfy remains an optional additional channel.
+The monitor is implemented and published at `test90042/nudch-appointment-monitor`, but GitHub's native scheduler has proven far too sparse for production use. Repository support for an external scheduler is being added. The workaround is complete only after cron-job.org has produced at least three successful monitor runs and one daily report run; native schedules will then be removed to prevent duplicates.
 
 ## Context and orientation
 
@@ -70,7 +77,7 @@ The repository started empty. `src/detect.js` classifies rendered portal text. `
 
 ## Plan of work
 
-The red/green implementation and local validation are complete. Initialize Git, create the first commit, then publish and configure the public repository after the required external-action confirmation.
+Add an explicit external-dispatch marker and stable run name, teach the daily report to count those runs while excluding manual checks, test the behavior, and publish it. Create two cron-job.org tasks using a fine-grained GitHub token: a six-minute monitor dispatch and a daily report dispatch. Verify the external path before removing the unreliable native GitHub schedules.
 
 ## Concrete steps
 
@@ -95,4 +102,4 @@ The final evidence will record the automated test count and the live dry-run cla
 
 `detectAvailability(text, targetUrl)` returns `{status, clinic, appointment, fingerprint, reason}`. `transitionState(previous, observation, checkedAt)` returns `{nextState, notifications}` with a stable notification key. `processObservation(options)` sends notifications in order and persists the next state only after delivery succeeds. `probePortal(options)` returns the rendered text and classification. Playwright is the sole package dependency; Node's built-in `fetch`, test runner, and filesystem APIs cover the rest.
 
-Revision note: Telegram was replaced with ntfy plus GitHub Issue/email after the user reported that Telegram was unavailable. Playwright was upgraded to 1.63.0 in response to a high-severity audit finding, and small modules were consolidated to meet the 20-file tolerance. Local validation is complete; publication remains.
+Revision note: Telegram was replaced with ntfy plus GitHub Issue/email after the user reported that Telegram was unavailable. Playwright was upgraded to 1.63.0 in response to a high-severity audit finding. On 2026-09-10 the plan was reopened because the native GitHub scheduler produced only six checks in 24 hours; an external cron-job.org dispatch is now the intended production trigger.

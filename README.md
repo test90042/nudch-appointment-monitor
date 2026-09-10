@@ -1,6 +1,6 @@
 # Monitor termínov NÚDCH
 
-Projekt približne každých šesť minút skontroluje verejnú stránku Psychiatrickej ambulancie 03 (MUDr. Böhmer). Keď sa objaví text **Najbližší termín**, konkrétny dátum a čas a možnosť **Rezervovať termín**, pošle ntfy push a vytvorí GitHub Issue priradený vášmu účtu. GitHub môže toto priradenie doručiť aj e-mailom.
+Projekt každých šesť minút skontroluje verejnú stránku Psychiatrickej ambulancie 03 (MUDr. Böhmer). Keď sa objaví text **Najbližší termín**, konkrétny dátum a čas a možnosť **Rezervovať termín**, pošle ntfy push a vytvorí GitHub Issue priradený vášmu účtu. GitHub môže toto priradenie doručiť aj e-mailom.
 
 Monitor nič nerezervuje, neprihlasuje sa a neposiela portálu žiadne osobné ani zdravotné údaje.
 
@@ -32,15 +32,15 @@ V osobných **GitHub Settings → Notifications** povoľte e-mail pre „Partici
 5. Otvorte **Actions → Monitor NUDCH appointments → Run workflow**, ponechajte `dry_run` zapnuté a skontrolujte úspešný výsledok.
 6. Spustite workflow ešte raz s `dry_run` vypnutým. Ak je termín nedostupný, upozornenie sa neposiela; prvé príde pri novom termíne alebo po troch chybách portálu.
 
-Naplánované GitHub workflow sa môžu spustiť s oneskorením. Šesť minút je plánovaná frekvencia, nie garancia okamžitého upozornenia.
+Naplánované GitHub workflow sa môžu spustiť s veľkým oneskorením alebo byť vynechané. Produkčný workaround preto používa [externý plánovač cron-job.org](docs/external-scheduler.md), ktorý cez obmedzený GitHub token spúšťa workflow každých šesť minút. Pôvodný GitHub rozvrh zostáva iba dočasnou zálohou, kým sa externé spúšťanie neoverí.
 
 ### Kontrola, že monitor funguje
 
 Na karte **Actions → Monitor NUDCH appointments** je každý pravidelný beh samostatný záznam. Zelený výsledok znamená, že portál vrátil definitívny stav; červený beh znamená chybu kontroly.
 
-Pri automatickom behu je ako udalosť uvedené **schedule**. Ručne spustený beh je označený **workflow_dispatch** a nepotvrdzuje fungovanie plánovača.
+Externý automatický beh má názov **External scheduled check**. Pôvodný GitHub automatický beh má názov **GitHub scheduled check** a ručný test **Manual check**. Externý aj ručný beh technicky používajú udalosť `workflow_dispatch`, preto ich rozlišuje názov behu.
 
-Každý deň o 07:15 UTC (približne 08:15 v zime alebo 09:15 v lete na Slovensku) príde cez ntfy súhrn za posledných 24 hodín. Obsahuje presný počet úspešných a neúspešných naplánovaných kontrol a čas poslednej úspešnej kontroly. Ak neprebehla ani jedna úspešná kontrola, správa je urgentná.
+Každý deň príde cez ntfy súhrn za posledných 24 hodín. Obsahuje počet úspešných a neúspešných kontrol, samostatné počty externého a GitHub plánovača a čas poslednej úspešnej kontroly. Ak neprebehla ani jedna úspešná kontrola, správa je urgentná. Denný report má byť tiež spustený externou úlohou, aby nebol závislý od nespoľahlivého GitHub rozvrhu.
 
 ## Lokálne použitie
 

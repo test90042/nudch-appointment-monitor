@@ -1,4 +1,5 @@
 name: Daily NUDCH monitor report
+run-name: ${{ github.event_name == 'schedule' && 'GitHub scheduled daily report' || 'External or manual daily report' }}
 
 on:
   schedule:

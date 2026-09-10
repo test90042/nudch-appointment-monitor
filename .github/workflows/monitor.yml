@@ -1,4 +1,5 @@
 name: Monitor NUDCH appointments
+run-name: ${{ github.event_name == 'schedule' && 'GitHub scheduled check' || (inputs.external_trigger && 'External scheduled check' || 'Manual check') }}
 
 on:
   schedule:
@@ -9,6 +10,11 @@ on:
         description: "Check the portal without notifications or state changes"
         required: true
         default: true
+        type: boolean
+      external_trigger:
+        description: "Mark a production run started by the external scheduler"
+        required: true
+        default: false
         type: boolean
 
 permissions:
