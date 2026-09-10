@@ -2,7 +2,7 @@
 
 This ExecPlan (execution plan) is a living document. The sections `Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
-Status: IN PROGRESS — strict target identity and fail-safe alerts
+Status: COMPLETE
 
 ## Purpose / big picture
 
@@ -54,7 +54,7 @@ The user needs a six-minute cloud check of the public NUDCH page for Psychiatric
 - [x] (2026-09-10 19:12Z) Added failing fixtures for wrong URL, redirect, wrong clinic, single appointment markers, partial parsing, immediate error alerting, and partial notification formatting; the baseline failed in the expected nine places.
 - [x] (2026-09-10 19:16Z) Implemented strict identity validation and fail-safe possible-slot observations without adding dependencies; all 28 tests passed.
 - [x] (2026-09-10 19:17Z) Completed a live dry run that returned the exact clinic and telephone-only state; `npm audit` reported zero vulnerabilities.
-- [ ] Publish and verify one external workflow run on the new commit.
+- [x] (2026-09-10 19:22Z) Published commit `c968678` and verified external run `34519890612` used that commit and completed successfully.
 
 ## Surprises & discoveries
 
@@ -82,7 +82,7 @@ The user needs a six-minute cloud check of the public NUDCH page for Psychiatric
 
 ## Outcomes & retrospective
 
-The external scheduler is operational. This revision is strengthening page identity and changing ambiguous appointment content from an error into an urgent possible-slot alert. Completion requires tests plus a live target dry run and a successful external workflow run after publication.
+The external scheduler remains operational with strict identity checks. The monitor now validates the configured and final URLs by host, path, decoded `idf`, and `step`, then requires the exact clinic identity. Either appointment marker results in availability: complete signals and date/time are `confirmed`, while any missing marker or value is `possible` and still generates an urgent notification. Genuine errors alert once immediately and a later successful check sends recovery. Twenty-eight tests, a zero-vulnerability audit, a live telephone-only dry run, and external run `34519890612` all succeeded.
 
 ## Context and orientation
 
@@ -109,10 +109,10 @@ All checks are read-only against NUDCH. Re-running a check with unchanged availa
 
 ## Artifacts and notes
 
-The final evidence will record the automated test count and the live dry-run classification. No screenshots or portal response bodies containing unrelated information will be committed.
+Evidence: `npm test` passed 28 tests; `npm audit --audit-level=high` reported zero vulnerabilities; the live dry run returned `unavailable` for `Psychiatrická ambulancia 03 (MUDr. Böhmer)`; GitHub external run `34519890612` completed successfully on commit `c968678`. No screenshots or portal response bodies containing unrelated information were committed.
 
 ## Interfaces and dependencies
 
-`detectAvailability(text, targetUrl)` returns `{status, clinic, appointment, fingerprint, reason}`. `transitionState(previous, observation, checkedAt)` returns `{nextState, notifications}` with a stable notification key. `processObservation(options)` sends notifications in order and persists the next state only after delivery succeeds. `probePortal(options)` returns the rendered text and classification. Playwright is the sole package dependency; Node's built-in `fetch`, test runner, and filesystem APIs cover the rest.
+`detectAvailability(text, targetUrl, finalUrl)` returns `{status, confidence?, clinic, appointment, fingerprint, reason}`. `confidence` is `confirmed` or `possible` for available observations. `validateTargetUrl(url, label)` returns `null` or a diagnostic string. `transitionState(previous, observation, checkedAt)` returns `{nextState, notifications}` with a stable notification key. `processObservation(options)` sends notifications in order and persists the next state only after delivery succeeds. `probePortal(options)` returns the rendered classification and validates the post-navigation URL. Playwright is the sole package dependency; Node's built-in `fetch`, test runner, and filesystem APIs cover the rest.
 
 Revision note: Telegram was replaced with ntfy plus GitHub Issue/email after the user reported that Telegram was unavailable. Playwright was upgraded to 1.63.0 in response to a high-severity audit finding. On 2026-09-10 the native scheduler was replaced by cron-job.org after only six checks in 24 hours. The plan was reopened again the same day to require exact target identity, possible-slot alerts for partial parsing, and immediate deduplicated error notifications.
