@@ -31,21 +31,31 @@ test("does not notify when an unavailable state repeats", () => {
   assert.deepEqual(repeat.notifications, []);
 });
 
-test("sends one outage alert after three errors and a recovery after success", () => {
+test("sends one outage alert on the first error and a recovery after success", () => {
   const error = { status: "error", fingerprint: null, clinic: null, appointment: null, reason: "Portal timeout." };
   const one = transitionState(initialState(), error, checkedAt);
   const two = transitionState(one.nextState, error, checkedAt);
-  const three = transitionState(two.nextState, error, checkedAt);
-  const four = transitionState(three.nextState, error, checkedAt);
 
-  assert.deepEqual(one.notifications, []);
+  assert.deepEqual(one.notifications.map((item) => item.type), ["outage"]);
   assert.deepEqual(two.notifications, []);
-  assert.deepEqual(three.notifications.map((item) => item.type), ["outage"]);
-  assert.deepEqual(four.notifications, []);
 
-  const recovered = transitionState(three.nextState, unavailable, checkedAt);
+  const recovered = transitionState(two.nextState, unavailable, checkedAt);
   assert.deepEqual(recovered.notifications.map((item) => item.type), ["recovery"]);
   assert.equal(recovered.nextState.consecutiveErrors, 0);
+});
+
+test("deduplicates a possible-slot observation and alerts again when full details appear", () => {
+  const possible = {
+    status: "available", confidence: "possible", fingerprint: "possible:nearest:14.09.2026:unknown",
+    clinic: "Clinic", appointment: { date: "14.09.2026", time: null }, reason: "Possible slot."
+  };
+  const first = transitionState(initialState(), possible, checkedAt);
+  const repeat = transitionState(first.nextState, possible, checkedAt);
+  const confirmed = transitionState(first.nextState, available, checkedAt);
+
+  assert.deepEqual(first.notifications.map((item) => item.type), ["availability"]);
+  assert.deepEqual(repeat.notifications, []);
+  assert.deepEqual(confirmed.notifications.map((item) => item.type), ["availability"]);
 });
 
 test("does not persist an available state when notification delivery fails", async () => {

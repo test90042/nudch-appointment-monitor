@@ -2,35 +2,38 @@
 
 This ExecPlan (execution plan) is a living document. The sections `Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
-Status: COMPLETE
+Status: IN PROGRESS — strict target identity and fail-safe alerts
 
 ## Purpose / big picture
 
-The user needs a five-minute cloud check of the public NUDCH page for Psychiatric Clinic 03. When a reservable appointment appears, the monitor sends an ntfy push and creates an idempotent GitHub Issue assigned to the user; GitHub can deliver that assignment by email. A public GitHub Actions workflow runs the check without requiring the user's computer to remain on. The monitor never books an appointment and never submits personal or medical data.
+The user needs a six-minute cloud check of the public NUDCH page for Psychiatric Clinic 03. The monitor must reject a wrong clinic or changed target URL, but must favor alerting when either appointment marker appears: failure to parse a date or time cannot suppress a possible-slot notification. Any genuine probe or identity error is reported immediately once, with a recovery notification later. cron-job.org starts the GitHub workflow without requiring the user's computer to remain on. The monitor never books an appointment and never submits personal or medical data.
 
 ## Constraints
 
 - Monitor only `https://portal.nudch.eu/workplaces/reservation?idf=nuo4|2958571&step=2` by default.
 - Do not automate booking, authentication, or entry of patient data.
 - Keep the unguessable ntfy topic in GitHub Secrets; never log or commit it.
-- Treat loading, 404, and unfamiliar page content as errors rather than availability.
+- Require the exact portal host, path, `idf=nuo4|2958571`, `step=2`, and clinic identity `Psychiatrická ambulancia 03 (MUDr. Böhmer)` after navigation.
+- Treat loading, 404, wrong identity, and unfamiliar content without appointment markers as errors rather than availability.
+- Treat either `Najbližší termín` or `Rezervovať termín` as possible availability even when a complete date and time cannot be parsed.
 - Persist an available state only after GitHub delivery and, when configured, ntfy delivery succeed.
 - Run on Node.js 22 with a standard GitHub-hosted Ubuntu runner.
 
 ## Tolerances (exception triggers)
 
-- Scope: stop if the implementation needs more than 20 project files or 1,200 net lines.
+- Scope: stop if this revision needs more than 10 modified project files or 250 net lines.
 - Dependencies: Playwright is the only external runtime dependency; ntfy and GitHub use Node's built-in HTTP client.
 - Iterations: stop if the automated suite remains failing after three focused repair attempts.
 - External state: do not create or publish a GitHub repository without authenticated tooling and a final local verification.
-- Ambiguity: use the approved defaults of public GitHub Actions, ntfy plus GitHub email, five-minute checks, transition-based deduplication, and no automatic booking.
+- Ambiguity: use the approved defaults of cron-job.org dispatching every six minutes, ntfy plus GitHub email, transition-based deduplication, immediate error alerting, and no automatic booking.
 
 ## Risks
 
 - Risk: the portal briefly renders a loading or 404 shell before its real content. Severity: high. Likelihood: high. Mitigation: wait for the clinic identity plus a final availability marker and reject transient content.
-- Risk: the portal changes wording or markup. Severity: medium. Likelihood: medium. Mitigation: use multiple semantic signals, bounded diagnostics, fixtures, and a three-failure health alert.
-- Risk: GitHub disables schedules after public-repository inactivity. Severity: high. Likelihood: medium. Mitigation: update a tracked monthly heartbeat through the scheduled workflow.
-- Risk: scheduled jobs may start later than their nominal time. Severity: medium. Likelihood: medium. Mitigation: document that five minutes is the requested cadence, not a real-time guarantee.
+- Risk: the portal changes wording or markup. Severity: high. Likelihood: medium. Mitigation: either appointment marker produces a deduplicated urgent alert even without a parsed date/time; all other recognition failures produce an immediate service alert.
+- Risk: a redirect or configuration typo points at another clinic. Severity: high. Likelihood: low. Mitigation: validate both requested and final URLs by decoded query values and require the exact normalized clinic name.
+- Risk: cron-job.org or GitHub workflow dispatch becomes unavailable. Severity: high. Likelihood: low. Mitigation: retain daily run accounting, cron-job.org history, GitHub Actions history, and immediate monitor error alerts once the workflow starts.
+- Risk: scheduled jobs may start later than their nominal time. Severity: medium. Likelihood: low. Mitigation: document that six minutes is the requested cadence, not a real-time guarantee.
 - Risk: ntfy has no uptime SLA and GitHub email timing depends on account settings. Severity: high. Likelihood: low. Mitigation: require idempotent GitHub Issues, keep ntfy optional, and save state only after configured deliveries succeed.
 
 ## Progress
@@ -47,6 +50,11 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 - [x] (2026-09-10 18:12Z) Created a non-expiring fine-grained token restricted to the monitor repository with Actions read/write only, then created and tested both cron-job.org jobs with HTTP 204 responses.
 - [x] (2026-09-10 18:28Z) Verified three consecutive automatic external monitor runs at six-minute intervals and one external daily-report run, all successful.
 - [x] (2026-09-10 18:30Z) Removed native GitHub schedules to prevent duplicate checks and completed final validation.
+- [x] (2026-09-10 19:05Z) Confirmed by live probe that the current target resolves to `Psychiatrická ambulancia 03 (MUDr. Böhmer)` and decoded `idf=nuo4|2958571`, but found the existing clinic regex was broader than the intended identity.
+- [x] (2026-09-10 19:12Z) Added failing fixtures for wrong URL, redirect, wrong clinic, single appointment markers, partial parsing, immediate error alerting, and partial notification formatting; the baseline failed in the expected nine places.
+- [x] (2026-09-10 19:16Z) Implemented strict identity validation and fail-safe possible-slot observations without adding dependencies; all 28 tests passed.
+- [x] (2026-09-10 19:17Z) Completed a live dry run that returned the exact clinic and telephone-only state; `npm audit` reported zero vulnerabilities.
+- [ ] Publish and verify one external workflow run on the new commit.
 
 ## Surprises & discoveries
 
@@ -55,6 +63,7 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 - Observation: Playwright 1.55.0 is affected by GHSA-7mvr-c777-76hp. Evidence: `npm audit` reported a high-severity direct dependency issue fixed after 1.55.0. Impact: the dependency is upgraded to 1.63.0 before any browser installation.
 - Observation: the initial layout reached the 20-file tolerance only after consolidating three small runtime helpers and one test file. Evidence: the final inventory reports exactly 20 non-generated project files. Impact: behavior remains separated by responsibility without exceeding the approved scope.
 - Observation: the explicit six-minute GitHub schedule produced only 6 scheduled runs in a 24-hour window. Evidence: the public Actions API returned six completed `schedule` runs between 2026-09-09 and 2026-09-10, all successful. Impact: GitHub's native scheduler is unsuitable as the primary trigger for this time-sensitive monitor.
+- Observation: the URL parser preserves `nuo4|2958571` as one decoded `idf` query value, and the live page currently exposes the exact intended clinic. Evidence: a Node URL parse and live Playwright dry run on 2026-09-10. Impact: the pipe is safe, but explicit semantic URL and clinic checks will guard future drift.
 
 ## Decision log
 
@@ -67,29 +76,32 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 - Decision: make ntfy optional while GitHub Issue/email remains required. Rationale: the monitor operates immediately without a new secret, and ntfy can be enabled later as an independent push channel. Date/Author: 2026-09-09, Codex.
 - Decision: use cron-job.org to call GitHub workflow dispatch with a fine-grained token restricted to this repository and Actions write permission. Rationale: the monitor code and secret notification configuration stay in GitHub while scheduling no longer depends on GitHub's best-effort cron. Date/Author: 2026-09-10, Codex.
 - Decision: mark external monitor runs through a boolean dispatch input and stable run name. Rationale: the daily report can count automatic external runs without incorrectly counting manual tests. Date/Author: 2026-09-10, Codex.
+- Decision: classify an observation as available when either appointment marker is visible, using `confidence=possible` if date or time is incomplete. Rationale: a false-positive alert is safer than missing a time-sensitive slot because portal markup changed. Date/Author: 2026-09-10, Codex.
+- Decision: send an outage notification on the first genuine error and deduplicate subsequent errors until recovery. Rationale: the user explicitly requested notification when parsing or checking fails, while deduplication avoids six-minute alert spam. Date/Author: 2026-09-10, Codex.
+- Decision: revise this milestone's file tolerance from eight to ten existing files while retaining the 250-net-line limit. Rationale: strict URL validation, parsing, transition behavior, notification formatting, their three focused test suites, CLI diagnostics, and two living documents span ten existing files; no new module or dependency is introduced and the net change remains below the line tolerance. Date/Author: 2026-09-10, Codex.
 
 ## Outcomes & retrospective
 
-The monitor is implemented and published at `test90042/nudch-appointment-monitor`. GitHub's native scheduler produced only six checks in 24 hours, so cron-job.org now dispatches the monitor every six minutes and the daily report at 08:15 Europe/Bratislava. Both test requests returned HTTP 204; three consecutive scheduled monitor runs and one daily-report run completed successfully. The native schedules were removed to prevent duplicates. The external credential has no expiration but is restricted to this single repository and Actions read/write.
+The external scheduler is operational. This revision is strengthening page identity and changing ambiguous appointment content from an error into an urgent possible-slot alert. Completion requires tests plus a live target dry run and a successful external workflow run after publication.
 
 ## Context and orientation
 
-The repository started empty. `src/detect.js` classifies rendered portal text. `src/transition.js` decides state and notifications. `src/probe.js` renders the page with Chromium. `src/github.js`, `src/ntfy.js`, and `src/notifier.js` deliver notifications. `src/runner.js` and `src/cli.js` orchestrate one check. `.github/workflows/monitor.yml` runs it every five minutes and commits meaningful state changes.
+The repository started empty. `src/detect.js` validates the exact target and classifies rendered portal text. `src/transition.js` decides state and notifications. `src/probe.js` renders the page with Chromium and supplies the final post-navigation URL. `src/github.js`, `src/ntfy.js`, and `src/notifier.js` deliver notifications. `src/runner.js` and `src/cli.js` orchestrate one check. cron-job.org dispatches `.github/workflows/monitor.yml` every six minutes, and the workflow commits meaningful state changes.
 
 ## Plan of work
 
-Add an explicit external-dispatch marker and stable run name, teach the daily report to count those runs while excluding manual checks, test the behavior, and publish it. Create two cron-job.org tasks using a fine-grained GitHub token: a six-minute monitor dispatch and a daily report dispatch. Verify the external path before removing the unreliable native GitHub schedules.
+First add fixtures that demonstrate the stricter identity and fail-safe notification rules. Then update `src/detect.js` to validate URL identity and return confirmed or possible availability, `src/probe.js` to pass the post-navigation URL, `src/transition.js` to alert on the first error, and `src/notifier.js` to format partial appointment data safely. Update user-facing documentation, run all tests and a live dry run, publish, and verify cron-job.org starts the new commit.
 
 ## Concrete steps
 
-From `D:\Projects\Private\nudch_bot`, run `npm test` and expect all tests to pass. Run `npm run check -- --dry-run` and expect one JSON line whose result is `unavailable` for the current target, without a notification request. Run `npm run heartbeat` twice and expect the second run not to change `heartbeat.txt`.
+From `D:\Projects\Private\nudch_bot`, run `npm test` and expect every detector, transition, notifier, report, and heartbeat test to pass. Run `node src/cli.js --dry-run` and expect `result=unavailable`, the exact clinic name, and no notification or state write. After pushing, query the Actions API and expect an `External scheduled check` on the new commit with conclusion `success`.
 
 ## Validation and acceptance
 
 - Tests: every parser, transition, delivery-order, and heartbeat test passes with `npm test`.
 - Live behavior: a dry run reaches a final target-page result and does not require notification credentials.
 - Security: the repository contains no ntfy topic, account credential, patient data, or booking automation.
-- Workflow: YAML contains five-minute schedule, manual dry-run input, concurrency control, required secrets, Chromium install, and guarded state commit.
+- Workflow: external dispatch remains enabled with manual dry-run input, concurrency control, required secrets, Chromium install, and guarded state commit.
 
 ## Idempotence and recovery
 
@@ -103,4 +115,4 @@ The final evidence will record the automated test count and the live dry-run cla
 
 `detectAvailability(text, targetUrl)` returns `{status, clinic, appointment, fingerprint, reason}`. `transitionState(previous, observation, checkedAt)` returns `{nextState, notifications}` with a stable notification key. `processObservation(options)` sends notifications in order and persists the next state only after delivery succeeds. `probePortal(options)` returns the rendered text and classification. Playwright is the sole package dependency; Node's built-in `fetch`, test runner, and filesystem APIs cover the rest.
 
-Revision note: Telegram was replaced with ntfy plus GitHub Issue/email after the user reported that Telegram was unavailable. Playwright was upgraded to 1.63.0 in response to a high-severity audit finding. On 2026-09-10 the plan was reopened because the native GitHub scheduler produced only six checks in 24 hours; an external cron-job.org dispatch is now the intended production trigger.
+Revision note: Telegram was replaced with ntfy plus GitHub Issue/email after the user reported that Telegram was unavailable. Playwright was upgraded to 1.63.0 in response to a high-severity audit finding. On 2026-09-10 the native scheduler was replaced by cron-job.org after only six checks in 24 hours. The plan was reopened again the same day to require exact target identity, possible-slot alerts for partial parsing, and immediate deduplicated error notifications.

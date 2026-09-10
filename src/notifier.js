@@ -34,6 +34,20 @@ function formatNotification(notification, targetUrl) {
 
   if (notification.type === "availability") {
     const { clinic, appointment } = notification.observation;
+    const complete = appointment?.date && appointment?.time && notification.observation.confidence !== "possible";
+    if (!complete) {
+      return [
+        "🚨 MOŽNÝ NOVÝ TERMÍN NÚDCH",
+        `Ambulancia: ${clinic}`,
+        `Dátum: ${appointment?.date ?? "nepodarilo sa prečítať"}`,
+        `Čas: ${appointment?.time ?? "nepodarilo sa prečítať"}`,
+        "Na stránke sa objavil signál termínu, ale nepodarilo sa potvrdiť všetky údaje.",
+        `Dôvod: ${notification.observation.reason}`,
+        `Skontrolované: ${checked}`,
+        `Skontrolujte rezerváciu ihneď: ${targetUrl}`,
+        "⚠️ Na prvé vyšetrenie sa podľa stránky objednáva telefonicky; online termín môže byť zrušený."
+      ].join("\n");
+    }
     return [
       "🚨 NOVÝ TERMÍN NÚDCH",
       `Ambulancia: ${clinic}`,
@@ -46,7 +60,7 @@ function formatNotification(notification, targetUrl) {
   if (notification.type === "outage") {
     return [
       "⚠️ Monitor NÚDCH má problém",
-      `Portál sa nepodarilo spoľahlivo skontrolovať ${notification.errorCount}-krát po sebe.`,
+      "Kontrolu portálu sa nepodarilo spoľahlivo dokončiť.",
       `Dôvod: ${notification.observation.reason}`,
       `Skontrolované: ${checked}`
     ].join("\n");
@@ -60,6 +74,11 @@ function formatNotification(notification, targetUrl) {
 
 function notificationTitle(notification) {
   if (notification.type === "availability") {
+    if (!notification.observation.appointment?.date ||
+        !notification.observation.appointment?.time ||
+        notification.observation.confidence === "possible") {
+      return "Možný nový termín NÚDCH – skontrolujte stránku";
+    }
     return `Nový termín NÚDCH: ${notification.observation.appointment.date} ${notification.observation.appointment.time}`;
   }
   return notification.type === "outage" ? "Monitor NÚDCH má problém" : "Monitor NÚDCH opäť funguje";

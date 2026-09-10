@@ -1,10 +1,14 @@
 import { chromium } from "playwright";
 
-import { detectAvailability } from "./detect.js";
+import { detectAvailability, validateTargetUrl } from "./detect.js";
 
 export async function probePortal({ targetUrl, timeoutMs = 30_000, chromiumImpl = chromium }) {
   let browser;
   try {
+    const targetUrlError = validateTargetUrl(targetUrl, "Configured URL");
+    if (targetUrlError) {
+      return probeError(targetUrlError);
+    }
     browser = await chromiumImpl.launch({ headless: true });
     const page = await browser.newPage({ locale: "sk-SK" });
     await page.goto(targetUrl, { waitUntil: "domcontentloaded", timeout: timeoutMs });
@@ -13,7 +17,7 @@ export async function probePortal({ targetUrl, timeoutMs = 30_000, chromiumImpl 
       await page.waitForFunction(
         () => {
           const text = document.body?.innerText ?? "";
-          const hasClinic = /Psychiatrick[aá] ambulancia/i.test(text);
+          const hasClinic = /Psychiatrick[aá] ambulancia 03\s*\(MUDr\. B[oö]hmer\)/i.test(text);
           const hasFinalSignal = /Najbli[žz][šs][ií] term[ií]n|Kontaktujte n[aá]s telefonicky|Rezervova[ťt] term[ií]n/i.test(text);
           return hasClinic && hasFinalSignal;
         },
@@ -24,18 +28,22 @@ export async function probePortal({ targetUrl, timeoutMs = 30_000, chromiumImpl 
     }
 
     const text = await page.locator("body").innerText({ timeout: 5_000 });
-    return detectAvailability(text, targetUrl);
+    return detectAvailability(text, targetUrl, page.url());
   } catch (error) {
-    return {
-      status: "error",
-      clinic: null,
-      appointment: null,
-      fingerprint: null,
-      reason: `Portal probe failed: ${safeErrorMessage(error)}`
-    };
+    return probeError(`Portal probe failed: ${safeErrorMessage(error)}`);
   } finally {
     await browser?.close();
   }
+}
+
+function probeError(reason) {
+  return {
+    status: "error",
+    clinic: null,
+    appointment: null,
+    fingerprint: null,
+    reason
+  };
 }
 
 function safeErrorMessage(error) {

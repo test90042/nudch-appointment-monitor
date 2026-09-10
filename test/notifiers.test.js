@@ -113,3 +113,34 @@ test("GitHub delivery works when optional ntfy is not configured", async () => {
   assert.equal(urls.length, 2);
   assert.ok(urls.every((url) => url.includes("api.github.com")));
 });
+
+test("possible availability without a parsed time produces an urgent usable notification", async () => {
+  const calls = [];
+  await sendNotification({
+    payload: {
+      notification: {
+        type: "availability", key: "availability:possible", checkedAt: "2026-09-09T16:30:00.000Z",
+        observation: {
+          confidence: "possible", clinic: "Psychiatrická ambulancia 03 (MUDr. Böhmer)",
+          appointment: { date: "14.09.2026", time: null }, reason: "Appointment marker visible."
+        }
+      }
+    },
+    targetUrl: "https://example.test",
+    github: { token: "token", repository: "owner/repo", assignee: "owner" },
+    ntfy: { topic: "unguessable-topic" },
+    fetchImpl: async (url, options = {}) => {
+      calls.push({ url, options });
+      if (calls.length === 1) return response({ json: [] });
+      if (calls.length === 2) return response({ status: 201, json: {} });
+      return response();
+    }
+  });
+
+  const issue = JSON.parse(calls[1].options.body);
+  const push = JSON.parse(calls[2].options.body);
+  assert.match(issue.title, /Možný nový termín/);
+  assert.match(issue.body, /Dátum: 14\.09\.2026/);
+  assert.match(issue.body, /Čas: nepodarilo sa prečítať/);
+  assert.equal(push.priority, 5);
+});

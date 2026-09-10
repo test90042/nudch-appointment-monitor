@@ -1,6 +1,6 @@
 # Monitor termínov NÚDCH
 
-Projekt každých šesť minút skontroluje verejnú stránku Psychiatrickej ambulancie 03 (MUDr. Böhmer). Keď sa objaví text **Najbližší termín**, konkrétny dátum a čas a možnosť **Rezervovať termín**, pošle ntfy push a vytvorí GitHub Issue priradený vášmu účtu. GitHub môže toto priradenie doručiť aj e-mailom.
+Projekt každých šesť minút skontroluje presnú verejnú stránku Psychiatrickej ambulancie 03 (MUDr. Böhmer). Keď sa objaví **Najbližší termín** alebo **Rezervovať termín**, pošle ntfy push a vytvorí GitHub Issue priradený vášmu účtu. Ak sa podarí prečítať dátum a čas, uvedie ich; ak nie, pošle urgentné upozornenie na možný termín aj bez nich. GitHub môže priradenie Issue doručiť aj e-mailom.
 
 Monitor nič nerezervuje, neprihlasuje sa a neposiela portálu žiadne osobné ani zdravotné údaje.
 
@@ -30,7 +30,7 @@ V osobných **GitHub Settings → Notifications** povoľte e-mail pre „Partici
 3. Ak repozitár vlastní organizácia, vytvorte repository variable `GITHUB_NOTIFY_USER` s vaším GitHub používateľským menom. Pri osobnom repozitári sa automaticky použije vlastník.
 4. V **Settings → Actions → General → Workflow permissions** povoľte **Read and write permissions**. Workflow zapisuje iba `state.json`, mesačný `heartbeat.txt` a notifikačné Issues.
 5. Otvorte **Actions → Monitor NUDCH appointments → Run workflow**, ponechajte `dry_run` zapnuté a skontrolujte úspešný výsledok.
-6. Spustite workflow ešte raz s `dry_run` vypnutým. Ak je termín nedostupný, upozornenie sa neposiela; prvé príde pri novom termíne alebo po troch chybách portálu.
+6. Spustite workflow ešte raz s `dry_run` vypnutým. Ak je termín nedostupný, upozornenie sa neposiela; prvé príde pri novom alebo možnom termíne, prípadne už pri prvej chybe kontroly.
 
 Naplánované GitHub workflow sa môžu spustiť s veľkým oneskorením alebo byť vynechané. Produkčné kontroly preto používa [externý plánovač cron-job.org](docs/external-scheduler.md), ktorý cez obmedzený GitHub token spúšťa workflow každých šesť minút. Natívny GitHub rozvrh bol po úspešnom overení externých behov odstránený, aby sa kontroly neduplikovali.
 
@@ -57,8 +57,10 @@ Pre skutočné lokálne odoslanie nastavte `NTFY_TOPIC`, `GITHUB_TOKEN`, `GITHUB
 ## Správanie upozornení
 
 - Nový alebo zmenený termín sa pošle raz.
+- Už jeden zo signálov **Najbližší termín** alebo **Rezervovať termín** stačí na upozornenie; chýbajúci dátum či čas upozornenie nepotlačí.
 - Rovnaký termín sa každých šesť minút neopakuje.
-- Po troch po sebe idúcich chybách príde jednorazové servisné upozornenie.
+- Nesprávne `idf`, `step`, presmerovanie na inú URL alebo iná ambulancia sa odmietnu ako chyba.
+- Už pri prvej chybe kontroly príde jednorazové servisné upozornenie; rovnaký výpadok sa každých šesť minút neopakuje.
 - Po obnovení portálu príde správa o náprave.
 - GitHub Issue obsahuje stabilný skrytý identifikátor, takže opakovanie nevytvorí duplicitný e-mail.
 - Ak ntfy push zlyhá, nový stav sa neuloží a ďalší beh push zopakuje.

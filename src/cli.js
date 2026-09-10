@@ -36,6 +36,7 @@ async function main() {
     checkedAt,
     dryRun: options.dryRun,
     result: observation.status,
+    confidence: observation.confidence ?? null,
     clinic: observation.clinic,
     appointment: observation.appointment,
     reason: observation.reason,

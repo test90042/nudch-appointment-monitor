@@ -23,7 +23,7 @@ export function transitionState(previousInput, observation, checkedAt) {
     nextState.lastError = observation.reason;
     nextState.failureStartedAt = previous.failureStartedAt ?? checkedAt;
 
-    if (errorCount >= 3 && !previous.outageNotified) {
+    if (!previous.outageNotified) {
       notifications.push({ type: "outage", key: `outage:${nextState.failureStartedAt}`, observation, checkedAt, errorCount });
       nextState.outageNotified = true;
       nextState.lastNotificationAt = checkedAt;
