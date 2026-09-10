@@ -1,9 +1,7 @@
 name: Daily NUDCH monitor report
-run-name: ${{ github.event_name == 'schedule' && 'GitHub scheduled daily report' || 'External or manual daily report' }}
+run-name: External or manual daily report
 
 on:
-  schedule:
-    - cron: "15 7 * * *"
   workflow_dispatch:
 
 permissions:

@@ -32,13 +32,13 @@ V osobných **GitHub Settings → Notifications** povoľte e-mail pre „Partici
 5. Otvorte **Actions → Monitor NUDCH appointments → Run workflow**, ponechajte `dry_run` zapnuté a skontrolujte úspešný výsledok.
 6. Spustite workflow ešte raz s `dry_run` vypnutým. Ak je termín nedostupný, upozornenie sa neposiela; prvé príde pri novom termíne alebo po troch chybách portálu.
 
-Naplánované GitHub workflow sa môžu spustiť s veľkým oneskorením alebo byť vynechané. Produkčný workaround preto používa [externý plánovač cron-job.org](docs/external-scheduler.md), ktorý cez obmedzený GitHub token spúšťa workflow každých šesť minút. Pôvodný GitHub rozvrh zostáva iba dočasnou zálohou, kým sa externé spúšťanie neoverí.
+Naplánované GitHub workflow sa môžu spustiť s veľkým oneskorením alebo byť vynechané. Produkčné kontroly preto používa [externý plánovač cron-job.org](docs/external-scheduler.md), ktorý cez obmedzený GitHub token spúšťa workflow každých šesť minút. Natívny GitHub rozvrh bol po úspešnom overení externých behov odstránený, aby sa kontroly neduplikovali.
 
 ### Kontrola, že monitor funguje
 
 Na karte **Actions → Monitor NUDCH appointments** je každý pravidelný beh samostatný záznam. Zelený výsledok znamená, že portál vrátil definitívny stav; červený beh znamená chybu kontroly.
 
-Externý automatický beh má názov **External scheduled check**. Pôvodný GitHub automatický beh má názov **GitHub scheduled check** a ručný test **Manual check**. Externý aj ručný beh technicky používajú udalosť `workflow_dispatch`, preto ich rozlišuje názov behu.
+Externý automatický beh má názov **External scheduled check** a ručný test **Manual check**. Oba technicky používajú udalosť `workflow_dispatch`, preto ich rozlišuje názov behu.
 
 Každý deň príde cez ntfy súhrn za posledných 24 hodín. Obsahuje počet úspešných a neúspešných kontrol, samostatné počty externého a GitHub plánovača a čas poslednej úspešnej kontroly. Ak neprebehla ani jedna úspešná kontrola, správa je urgentná. Denný report má byť tiež spustený externou úlohou, aby nebol závislý od nespoľahlivého GitHub rozvrhu.
 

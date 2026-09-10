@@ -2,7 +2,7 @@
 
 This ExecPlan (execution plan) is a living document. The sections `Constraints`, `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
-Status: IN PROGRESS — external scheduler workaround
+Status: COMPLETE
 
 ## Purpose / big picture
 
@@ -44,8 +44,9 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 - [x] (2026-09-09 18:17Z) Published the public repository and completed successful dry and live workflow runs.
 - [x] (2026-09-10 18:00Z) Measured only 6 GitHub-scheduled checks in the preceding 24 hours instead of roughly 240 requested checks.
 - [x] (2026-09-10 18:10Z) Added externally dispatched run identification, report accounting, tests, and cron-job.org setup documentation.
-- [ ] Create the restricted fine-grained GitHub token and two cron-job.org jobs, then verify at least three monitor dispatches and one daily report dispatch.
-- [ ] Remove native GitHub schedules after the external scheduler is proven, rerun validation, and mark this plan complete.
+- [x] (2026-09-10 18:12Z) Created a non-expiring fine-grained token restricted to the monitor repository with Actions read/write only, then created and tested both cron-job.org jobs with HTTP 204 responses.
+- [x] (2026-09-10 18:28Z) Verified three consecutive automatic external monitor runs at six-minute intervals and one external daily-report run, all successful.
+- [x] (2026-09-10 18:30Z) Removed native GitHub schedules to prevent duplicate checks and completed final validation.
 
 ## Surprises & discoveries
 
@@ -69,7 +70,7 @@ The user needs a five-minute cloud check of the public NUDCH page for Psychiatri
 
 ## Outcomes & retrospective
 
-The monitor is implemented and published at `test90042/nudch-appointment-monitor`, but GitHub's native scheduler has proven far too sparse for production use. Repository support for an external scheduler is being added. The workaround is complete only after cron-job.org has produced at least three successful monitor runs and one daily report run; native schedules will then be removed to prevent duplicates.
+The monitor is implemented and published at `test90042/nudch-appointment-monitor`. GitHub's native scheduler produced only six checks in 24 hours, so cron-job.org now dispatches the monitor every six minutes and the daily report at 08:15 Europe/Bratislava. Both test requests returned HTTP 204; three consecutive scheduled monitor runs and one daily-report run completed successfully. The native schedules were removed to prevent duplicates. The external credential has no expiration but is restricted to this single repository and Actions read/write.
 
 ## Context and orientation
 

@@ -1,9 +1,7 @@
 name: Monitor NUDCH appointments
-run-name: ${{ github.event_name == 'schedule' && 'GitHub scheduled check' || (inputs.external_trigger && 'External scheduled check' || 'Manual check') }}
+run-name: ${{ inputs.external_trigger && 'External scheduled check' || 'Manual check' }}
 
 on:
-  schedule:
-    - cron: "3,9,15,21,27,33,39,45,51,57 * * * *"
   workflow_dispatch:
     inputs:
       dry_run:

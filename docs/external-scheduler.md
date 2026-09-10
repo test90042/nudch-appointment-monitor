@@ -43,6 +43,6 @@ Vytvorte druhú úlohu raz denne, napríklad o 08:15 slovenského času:
 
 Report počíta pôvodné GitHub `schedule` behy aj behy označené **External scheduled check**, ale ignoruje ručné testy.
 
-## 4. Overenie a prepnutie
+## 4. Overenie
 
-Najprv v cron-job.org použite **Run now**. Skontrolujte HTTP 204 a následne zelený beh **External scheduled check** v GitHub Actions. Až po aspoň troch úspešných externých behoch odstráňte blok `schedule` z oboch workflow súborov, aby sa kontroly neduplikovali. Pri chybe 401/403 skontrolujte expiráciu tokenu a oprávnenie Actions: Read and write.
+V cron-job.org použite **Test run**. Skontrolujte HTTP 204 a následne zelený beh **External scheduled check** v GitHub Actions. Produkčné nastavenie bolo overené tromi po sebe idúcimi automatickými behmi a natívne bloky `schedule` boli odstránené, aby sa kontroly neduplikovali. Pri chybe 401/403 skontrolujte, či token stále existuje a má oprávnenie Actions: Read and write.
