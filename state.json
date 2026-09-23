@@ -2,10 +2,10 @@
   "version": 1,
   "lastKnownAvailability": false,
   "availabilityFingerprint": null,
-  "consecutiveErrors": 0,
-  "outageNotified": false,
-  "failureStartedAt": null,
-  "lastStateChangeAt": "2026-09-21T12:27:44.779Z",
-  "lastNotificationAt": "2026-09-21T10:46:02.237Z",
-  "lastError": null
+  "consecutiveErrors": 1,
+  "outageNotified": true,
+  "failureStartedAt": "2026-09-23T16:03:49.806Z",
+  "lastStateChangeAt": "2026-09-23T16:03:49.806Z",
+  "lastNotificationAt": "2026-09-23T16:03:49.806Z",
+  "lastError": "The portal is still loading or returned its transient error shell."
 }
