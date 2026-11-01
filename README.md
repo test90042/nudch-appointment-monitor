@@ -1,6 +1,6 @@
 # Monitor termínov NÚDCH
 
-Projekt každých šesť minút skontroluje presnú verejnú stránku Psychiatrickej ambulancie 03 (MUDr. Böhmer). Keď sa objaví **Najbližší termín** alebo **Rezervovať termín**, pošle ntfy push a vytvorí GitHub Issue priradený vášmu účtu. Ak sa podarí prečítať dátum a čas, uvedie ich; ak nie, pošle urgentné upozornenie na možný termín aj bez nich. GitHub môže priradenie Issue doručiť aj e-mailom.
+Projekt každých šesť minút skontroluje presnú verejnú stránku Psychiatrickej ambulancie 03. Akceptuje pôvodné označenie MUDr. Böhmer aj aktuálne označenie MUDr. Surovcová. Keď sa objaví **Najbližší termín** alebo **Rezervovať termín**, pošle ntfy push a vytvorí GitHub Issue priradený vášmu účtu. Ak sa podarí prečítať dátum a čas, uvedie ich; ak nie, pošle urgentné upozornenie na možný termín aj bez nich. GitHub môže priradenie Issue doručiť aj e-mailom.
 
 Monitor nič nerezervuje, neprihlasuje sa a neposiela portálu žiadne osobné ani zdravotné údaje.
 

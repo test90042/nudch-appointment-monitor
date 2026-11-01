@@ -32,6 +32,16 @@ test("detects the target's telephone-only state", () => {
   assert.equal(result.fingerprint, null);
 });
 
+test("accepts the current clinic name with MUDr. Surovcová", () => {
+  const result = detectAvailability(`
+    Psychiatrická ambulancia 03 (MUDr. Surovcová)
+    Kontaktujte nás telefonicky
+  `, targetUrl);
+
+  assert.equal(result.status, "unavailable");
+  assert.equal(result.clinic, "Psychiatrická ambulancia 03 (MUDr. Surovcová)");
+});
+
 test("rejects a loading shell", () => {
   const result = detectAvailability("Stránka sa načítava, počkajte prosím...", targetUrl);
   assert.equal(result.status, "error");

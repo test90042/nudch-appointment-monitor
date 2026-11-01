@@ -17,7 +17,7 @@ export async function probePortal({ targetUrl, timeoutMs = 30_000, chromiumImpl 
       await page.waitForFunction(
         () => {
           const text = document.body?.innerText ?? "";
-          const hasClinic = /Psychiatrick[aá] ambulancia 03\s*\(MUDr\. B[oö]hmer\)/i.test(text);
+          const hasClinic = /Psychiatrick[aá] ambulancia 03\s*\(MUDr\. (?:B[oö]hmer|Surovcov[aá])\)/i.test(text);
           const hasFinalSignal = /Najbli[žz][šs][ií] term[ií]n|Kontaktujte n[aá]s telefonicky|Rezervova[ťt] term[ií]n/i.test(text);
           return hasClinic && hasFinalSignal;
         },

@@ -1,5 +1,8 @@
 const CLINIC_PATTERN = /Psychiatrick[aá] ambulancia[^\r\n]*/i;
-const EXPECTED_CLINIC = "Psychiatrická ambulancia 03 (MUDr. Böhmer)";
+const EXPECTED_CLINICS = [
+  "Psychiatrická ambulancia 03 (MUDr. Böhmer)",
+  "Psychiatrická ambulancia 03 (MUDr. Surovcová)"
+];
 const EXPECTED_URL = {
   protocol: "https:",
   hostname: "portal.nudch.eu",
@@ -24,7 +27,7 @@ export function detectAvailability(rawText, targetUrl, finalUrl = targetUrl) {
     return errorResult(clinic, "The portal is still loading or returned its transient error shell.");
   }
 
-  if (!clinic || normalizeIdentity(clinic) !== normalizeIdentity(EXPECTED_CLINIC)) {
+  if (!clinic || !EXPECTED_CLINICS.some((expected) => normalizeIdentity(clinic) === normalizeIdentity(expected))) {
     return errorResult(clinic, "The exact clinic identity is not visible on the page.");
   }
 

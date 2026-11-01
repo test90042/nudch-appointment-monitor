@@ -13,7 +13,7 @@ The user needs a six-minute cloud check of the public NUDCH page for Psychiatric
 - Monitor only `https://portal.nudch.eu/workplaces/reservation?idf=nuo4|2958571&step=2` by default.
 - Do not automate booking, authentication, or entry of patient data.
 - Keep the unguessable ntfy topic in GitHub Secrets; never log or commit it.
-- Require the exact portal host, path, `idf=nuo4|2958571`, `step=2`, and clinic identity `Psychiatrická ambulancia 03 (MUDr. Böhmer)` after navigation.
+- Require the exact portal host, path, `idf=nuo4|2958571`, `step=2`, and one of the two known clinic identities: `Psychiatrická ambulancia 03 (MUDr. Böhmer)` or `Psychiatrická ambulancia 03 (MUDr. Surovcová)` after navigation.
 - Treat loading, 404, wrong identity, and unfamiliar content without appointment markers as errors rather than availability.
 - Treat either `Najbližší termín` or `Rezervovať termín` as possible availability even when a complete date and time cannot be parsed.
 - Persist an available state only after GitHub delivery and, when configured, ntfy delivery succeed.
@@ -116,3 +116,5 @@ Evidence: `npm test` passed 28 tests; `npm audit --audit-level=high` reported ze
 `detectAvailability(text, targetUrl, finalUrl)` returns `{status, confidence?, clinic, appointment, fingerprint, reason}`. `confidence` is `confirmed` or `possible` for available observations. `validateTargetUrl(url, label)` returns `null` or a diagnostic string. `transitionState(previous, observation, checkedAt)` returns `{nextState, notifications}` with a stable notification key. `processObservation(options)` sends notifications in order and persists the next state only after delivery succeeds. `probePortal(options)` returns the rendered classification and validates the post-navigation URL. Playwright is the sole package dependency; Node's built-in `fetch`, test runner, and filesystem APIs cover the rest.
 
 Revision note: Telegram was replaced with ntfy plus GitHub Issue/email after the user reported that Telegram was unavailable. Playwright was upgraded to 1.63.0 in response to a high-severity audit finding. On 2026-09-10 the native scheduler was replaced by cron-job.org after only six checks in 24 hours. The plan was reopened again the same day to require exact target identity, possible-slot alerts for partial parsing, and immediate deduplicated error notifications.
+
+Revision note (2026-11-01): The portal renamed the same `idf=nuo4|2958571` clinic from MUDr. Böhmer to MUDr. Surovcová. Exact identity validation now accepts either known name while continuing to reject other psychiatric clinics.
