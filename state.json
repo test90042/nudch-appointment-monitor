@@ -2,10 +2,10 @@
   "version": 1,
   "lastKnownAvailability": false,
   "availabilityFingerprint": null,
-  "consecutiveErrors": 0,
-  "outageNotified": false,
-  "failureStartedAt": null,
-  "lastStateChangeAt": "2026-11-04T07:10:04.677Z",
-  "lastNotificationAt": "2026-11-04T07:10:04.677Z",
-  "lastError": null
+  "consecutiveErrors": 1,
+  "outageNotified": true,
+  "failureStartedAt": "2026-11-05T16:21:43.666Z",
+  "lastStateChangeAt": "2026-11-05T16:21:43.666Z",
+  "lastNotificationAt": "2026-11-05T16:21:43.666Z",
+  "lastError": "Portal probe failed: page.goto: Timeout 30000ms exceeded."
 }
