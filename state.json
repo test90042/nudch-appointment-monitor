@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "lastKnownAvailability": true,
-  "availabilityFingerprint": "25.02.2027T12:10",
+  "lastKnownAvailability": false,
+  "availabilityFingerprint": null,
   "consecutiveErrors": 0,
   "outageNotified": false,
   "failureStartedAt": null,
-  "lastStateChangeAt": "2026-11-06T10:15:44.796Z",
+  "lastStateChangeAt": "2026-11-06T10:27:36.125Z",
   "lastNotificationAt": "2026-11-06T10:15:44.796Z",
   "lastError": null
 }
